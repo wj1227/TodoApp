@@ -14,4 +14,12 @@ interface ToDoDao {
     @Insert(onConflict = IGNORE)
     suspend fun insertData(todoData: ToDoData)
 
+    @Update
+    suspend fun updateData(todoData: ToDoData)
+
+    @Delete
+    suspend fun deleteData(todoData: ToDoData)
+
+    @Query("DELETE FROM todo")
+    suspend fun deleteAll()
 }

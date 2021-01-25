@@ -11,6 +11,7 @@ import com.example.todoapp.R
 import com.example.todoapp.data.models.ToDoData
 import com.example.todoapp.data.viewmodel.TodoViewModel
 import com.example.todoapp.fragments.SharedViewModel
+import com.example.todoapp.utils.hideKeyboard
 import com.example.todoapp.utils.showToast
 
 class AddFragment : Fragment() {
@@ -71,6 +72,11 @@ class AddFragment : Fragment() {
         } else {
             this.context?.showToast("Please all fields!")
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        view?.hideKeyboard()
     }
 
 }

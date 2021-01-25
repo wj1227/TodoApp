@@ -6,13 +6,17 @@ import android.widget.AdapterView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import com.example.todoapp.R
 import com.example.todoapp.data.models.Priority
+import com.example.todoapp.data.models.ToDoData
 import com.example.todoapp.utils.HIGH_PRIORITY
 import com.example.todoapp.utils.LOW_PRIORITY
 import com.example.todoapp.utils.MEDIUM_PRIORITY
 
 class SharedViewModel(application: Application) : AndroidViewModel(application) {
+
+    val emptyDatabase: MutableLiveData<Boolean> = MutableLiveData(true)
 
     val listener: AdapterView.OnItemSelectedListener = object : AdapterView.OnItemSelectedListener {
         override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -37,4 +41,17 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
             else -> throw IllegalStateException("Not Found Priority")
         }
     }
+
+    fun parsePriorityToInt(priority: Priority): Int {
+        return when (priority) {
+            Priority.HIGH -> 0
+            Priority.MEDIUM -> 1
+            Priority.LOW -> 2
+        }
+    }
+
+    fun checkDatabase(todoData: List<ToDoData>) {
+        emptyDatabase.value = todoData.isEmpty()
+    }
+
 }

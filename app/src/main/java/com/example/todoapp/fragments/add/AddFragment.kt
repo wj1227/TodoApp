@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.todoapp.R
 import com.example.todoapp.data.models.ToDoData
 import com.example.todoapp.data.viewmodel.TodoViewModel
+import com.example.todoapp.databinding.FragmentAddBinding
 import com.example.todoapp.fragments.SharedViewModel
 import com.example.todoapp.utils.hideKeyboard
 import com.example.todoapp.utils.showToast
@@ -18,26 +19,23 @@ class AddFragment : Fragment() {
 
     private val viewModel: TodoViewModel by viewModels()
     private val sharedViewModel: SharedViewModel by viewModels()
-    private lateinit var title: EditText
-    private lateinit var description: EditText
-    private lateinit var spinner: Spinner
+
+    private var _binding: FragmentAddBinding? = null
+    private val binding
+        get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
-        val view = inflater.inflate(R.layout.fragment_add, container, false)
-
-        title = view.findViewById(R.id.et_title)
-        description = view.findViewById(R.id.et_description)
-        spinner = view.findViewById(R.id.sn_priorities)
-
-        spinner.onItemSelectedListener = sharedViewModel.listener
+        _binding = FragmentAddBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = this
+        binding.snPriorities.onItemSelectedListener = sharedViewModel.listener
 
         setHasOptionsMenu(true)
 
-        return view
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -52,9 +50,9 @@ class AddFragment : Fragment() {
     }
 
     private fun insertDataTodo() {
-        val todoTitle = title.text.toString()
-        val todoPriority = spinner.selectedItem.toString()
-        val todoDescription = description.text.toString()
+        val todoTitle = binding.etTitle.text.toString()
+        val todoPriority = binding.snPriorities.selectedItem.toString()
+        val todoDescription = binding.etDescription.text.toString()
 
         val validation = sharedViewModel.verityDataFromUser(todoTitle, todoDescription)
 
@@ -67,16 +65,17 @@ class AddFragment : Fragment() {
             )
 
             viewModel.insertData(todoData)
-            this.context?.showToast("Successfully added!")
+            binding.root.context.showToast("Successfully added!")
             findNavController().navigate(R.id.action_addFragment_to_listFragment)
         } else {
-            this.context?.showToast("Please all fields!")
+            binding.root.context.showToast("Please all fields!")
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        view?.hideKeyboard()
+        binding.root.hideKeyboard()
+        _binding = null
     }
 
 }

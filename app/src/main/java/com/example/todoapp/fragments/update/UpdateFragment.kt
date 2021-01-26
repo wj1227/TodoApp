@@ -14,6 +14,7 @@ import com.example.todoapp.R
 import com.example.todoapp.data.models.Priority
 import com.example.todoapp.data.models.ToDoData
 import com.example.todoapp.data.viewmodel.TodoViewModel
+import com.example.todoapp.databinding.FragmentUpdateBinding
 import com.example.todoapp.fragments.SharedViewModel
 import com.example.todoapp.utils.hideKeyboard
 import com.example.todoapp.utils.showToast
@@ -25,33 +26,23 @@ class UpdateFragment : Fragment() {
     private val sharedViewmodel: SharedViewModel by viewModels()
     private val viewModel: TodoViewModel by viewModels()
 
-    private lateinit var title: EditText
-    private lateinit var priority: Spinner
-    private lateinit var description: EditText
+    private var _binding: FragmentUpdateBinding? = null
+    private val binding
+        get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
-        val view = inflater.inflate(R.layout.fragment_update, container, false)
-
-        title = view.findViewById(R.id.et_title)
-        priority = view.findViewById(R.id.sn_priorities)
-        description = view.findViewById(R.id.et_description)
-        priority.onItemSelectedListener = sharedViewmodel.listener
-
-        setTodoItem()
+        _binding = FragmentUpdateBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = this
+        binding.args = args
+        binding.snPriorities.onItemSelectedListener = sharedViewmodel.listener
 
         setHasOptionsMenu(true)
 
-        return view
-    }
-
-    private fun setTodoItem() {
-        title.setText(args.todoItem.title)
-        description.setText(args.todoItem.description)
-        priority.setSelection(sharedViewmodel.parsePriorityToInt(args.todoItem.priority))
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -62,16 +53,16 @@ class UpdateFragment : Fragment() {
         when (item.itemId) {
             R.id.menu_save -> updateTodo()
             R.id.menu_delete -> confirmDeleteItem()
-            else -> throw IllegalStateException("Not Found Menu Item")
+            //else -> throw IllegalStateException("Not Found Menu Item")
         }
 
         return super.onOptionsItemSelected(item)
     }
 
     private fun updateTodo() {
-        val title = title.text.toString()
-        val description = description.text.toString()
-        val priority = priority.selectedItem.toString()
+        val title = binding.etTitle.text.toString()
+        val description = binding.etDescription.text.toString()
+        val priority = binding.snPriorities.selectedItem.toString()
 
         val validation = sharedViewmodel.verityDataFromUser(title, description)
 
@@ -85,9 +76,9 @@ class UpdateFragment : Fragment() {
 
             viewModel.updateData(item)
             findNavController().navigate(R.id.action_updateFragment_to_listFragment)
-            this.context?.showToast("Successfully updated!")
+            binding.root.context.showToast("Successfully updated!")
         } else {
-            this.context?.showToast("Please all fields!")
+            binding.root.context.showToast("Please all fields!")
         }
     }
 
@@ -106,11 +97,12 @@ class UpdateFragment : Fragment() {
     private fun deleteData() {
         viewModel.deleteData(args.todoItem)
         findNavController().navigate(R.id.action_updateFragment_to_listFragment)
-        this.context?.showToast("Successfully deleted!")
+        binding.root.context.showToast("Successfully deleted!")
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        view?.hideKeyboard()
+        binding.root.hideKeyboard()
+        _binding = null
     }
 }

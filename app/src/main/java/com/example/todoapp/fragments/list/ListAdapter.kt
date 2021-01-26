@@ -1,16 +1,10 @@
 package com.example.todoapp.fragments.list
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.example.todoapp.R
-import com.example.todoapp.data.models.Priority
 import com.example.todoapp.data.models.ToDoData
+import com.example.todoapp.databinding.RowLayoutBinding
 
 typealias OnRecyclerViewItemClick = (ToDoData) -> Unit
 
@@ -21,12 +15,12 @@ class ListAdapter(
     private var dataList = emptyList<ToDoData>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        return MyViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.row_layout, parent, false)).also { holder ->
+        return MyViewHolder.from(parent).also {
             if (onItemClick == null) {
                 return@also
             } else {
-                holder.itemView.setOnClickListener {
-                    val currentItem = dataList.getOrNull(holder.adapterPosition) ?: return@setOnClickListener
+                it.itemView.setOnClickListener { _ ->
+                    val currentItem = dataList.getOrNull(it.adapterPosition) ?: return@setOnClickListener
                     onItemClick.invoke(currentItem)
                 }
             }
@@ -39,18 +33,19 @@ class ListAdapter(
 
     override fun getItemCount() = dataList.size
 
-    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val todoTitle = itemView.findViewById<TextView>(R.id.tv_title)
-        private val todoDescription = itemView.findViewById<TextView>(R.id.tv_description)
-        private val todoPriority = itemView.findViewById<CardView>(R.id.cv_priority)
+    class MyViewHolder(private val binding: RowLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(todoData: ToDoData) {
-            todoTitle.text = todoData.title
-            todoDescription.text = todoData.description
-            when (todoData.priority) {
-                Priority.HIGH -> todoPriority.setCardBackgroundColor(ContextCompat.getColor(todoDescription.context, R.color.red))
-                Priority.MEDIUM -> todoPriority.setCardBackgroundColor(ContextCompat.getColor(todoDescription.context, R.color.yellow))
-                Priority.LOW -> todoPriority.setCardBackgroundColor(ContextCompat.getColor(todoDescription.context, R.color.green))
+            binding.item = todoData
+            binding.executePendingBindings()
+        }
+
+        companion object Factory {
+            fun from(parent: ViewGroup): MyViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = RowLayoutBinding.inflate(layoutInflater, parent, false)
+
+                return MyViewHolder(binding)
             }
         }
     }

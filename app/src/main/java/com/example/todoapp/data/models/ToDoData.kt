@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.todoapp.data.models.Priority
+import com.example.todoapp.fragments.list.Identifiable
 import kotlinx.android.parcel.Parcelize
 
 
@@ -15,4 +16,7 @@ data class ToDoData(
     val title: String,
     val priority: Priority,
     val description: String
-) : Parcelable
+) : Parcelable, Identifiable {
+    override val itentifier: Any
+        get() = id
+}

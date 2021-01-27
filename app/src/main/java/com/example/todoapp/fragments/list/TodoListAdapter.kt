@@ -2,25 +2,32 @@ package com.example.todoapp.fragments.list
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.data.models.ToDoData
 import com.example.todoapp.databinding.RowLayoutBinding
 
 typealias OnRecyclerViewItemClick = (ToDoData) -> Unit
 
-class ListAdapter(
+class TodoListAdapter(
     private val onItemClick: OnRecyclerViewItemClick? = null
-) : RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
+) : ListAdapter<ToDoData, TodoListAdapter.MyViewHolder>(object : DiffUtil.ItemCallback<ToDoData>() {
+    override fun areItemsTheSame(oldItem: ToDoData, newItem: ToDoData): Boolean {
+        return oldItem.itentifier == newItem.itentifier
+    }
 
-    var dataList = emptyList<ToDoData>()
-
+    override fun areContentsTheSame(oldItem: ToDoData, newItem: ToDoData): Boolean {
+        return oldItem == newItem
+    }
+}) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         return MyViewHolder.from(parent).also {
             if (onItemClick == null) {
                 return@also
             } else {
                 it.itemView.setOnClickListener { _ ->
-                    val currentItem = dataList.getOrNull(it.adapterPosition) ?: return@setOnClickListener
+                    val currentItem = currentList.getOrNull(it.adapterPosition) ?: return@setOnClickListener
                     onItemClick.invoke(currentItem)
                 }
             }
@@ -28,10 +35,8 @@ class ListAdapter(
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(dataList[position])
+        holder.bind(currentList[position])
     }
-
-    override fun getItemCount() = dataList.size
 
     class MyViewHolder(private val binding: RowLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
 
@@ -48,10 +53,5 @@ class ListAdapter(
                 return MyViewHolder(binding)
             }
         }
-    }
-
-    fun addItems(todoData: List<ToDoData>) {
-        this.dataList = todoData
-        notifyDataSetChanged()
     }
 }

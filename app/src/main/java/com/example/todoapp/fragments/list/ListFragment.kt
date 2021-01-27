@@ -11,14 +11,17 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.R
+import com.example.todoapp.data.models.ToDoData
 import com.example.todoapp.data.viewmodel.TodoViewModel
 import com.example.todoapp.databinding.FragmentListBinding
 import com.example.todoapp.fragments.SharedViewModel
 import com.example.todoapp.utils.hideKeyboard
 import com.example.todoapp.utils.showToast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 
 class ListFragment : Fragment() {
 
@@ -46,6 +49,7 @@ class ListFragment : Fragment() {
         }
 
         binding.rvList.adapter = adapter
+        swipeToDelete(binding.rvList)
 
         initViewModelObserving()
 
@@ -77,6 +81,30 @@ class ListFragment : Fragment() {
         alertDialog.setNegativeButton("NO") { _, _ -> }
 
         alertDialog.show()
+    }
+
+    private fun swipeToDelete(rv: RecyclerView) {
+        val swipeCallback = object : SwipeDelete() {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val item = adapter.dataList[viewHolder.adapterPosition]
+                viewModel.deleteData(item)
+                adapter.notifyItemRemoved(viewHolder.adapterPosition)
+                binding.root.context.showToast("Successfully Removed '${item.title}'")
+
+                restoreDeleteData(viewHolder.itemView, item, viewHolder.adapterPosition)
+            }
+        }
+
+        val itemHelper = ItemTouchHelper(swipeCallback)
+        itemHelper.attachToRecyclerView(rv)
+    }
+
+    private fun restoreDeleteData(view: View, deletedItem: ToDoData, position: Int) {
+        val snackbar = Snackbar.make(view, "Deleted '${deletedItem.title}'", Snackbar.LENGTH_LONG)
+        snackbar.setAction("Undo") {
+            viewModel.insertData(deletedItem)
+            adapter.notifyItemChanged(position)
+        }.show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

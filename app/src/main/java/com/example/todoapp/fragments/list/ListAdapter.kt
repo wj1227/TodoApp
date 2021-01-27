@@ -12,7 +12,7 @@ class ListAdapter(
     private val onItemClick: OnRecyclerViewItemClick? = null
 ) : RecyclerView.Adapter<ListAdapter.MyViewHolder>() {
 
-    private var dataList = emptyList<ToDoData>()
+    var dataList = emptyList<ToDoData>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         return MyViewHolder.from(parent).also {

@@ -3,6 +3,7 @@ package com.example.todoapp.fragments.list
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -19,7 +20,7 @@ import com.example.todoapp.utils.showToast
 import com.google.android.material.snackbar.Snackbar
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
-class ListFragment : Fragment() {
+class ListFragment : Fragment(), SearchView.OnQueryTextListener {
 
     private val viewModel: TodoViewModel by viewModels()
     private val sharedViewModel: SharedViewModel by viewModels()
@@ -94,7 +95,7 @@ class ListFragment : Fragment() {
                 adapter.notifyItemRemoved(viewHolder.adapterPosition)
                 binding.root.context.showToast("Successfully Removed '${item.title}'")
 
-                restoreDeleteData(viewHolder.itemView, item, viewHolder.adapterPosition)
+                restoreDeleteData(viewHolder.itemView, item)
             }
         }
 
@@ -102,24 +103,66 @@ class ListFragment : Fragment() {
         itemHelper.attachToRecyclerView(rv)
     }
 
-    private fun restoreDeleteData(view: View, deletedItem: ToDoData, position: Int) {
+    private fun restoreDeleteData(view: View, deletedItem: ToDoData) {
         val snackbar = Snackbar.make(view, "Deleted '${deletedItem.title}'", Snackbar.LENGTH_LONG)
         snackbar.setAction("Undo") {
             viewModel.insertData(deletedItem)
-            adapter.notifyItemChanged(position)
+            //adapter.notifyItemChanged(position)
         }.show()
+    }
+
+    private fun searchQuery(query: String) {
+        viewModel.searchTodo(query).observe(this, Observer { list ->
+            list?.let {
+                println("?: $it")
+                adapter.submitList(it)
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.list_fragment_menu, menu)
+
+        val search = menu.findItem(R.id.menu_search)
+        val searchView = search.actionView as? SearchView
+        searchView?.isSubmitButtonEnabled = true
+        searchView?.setOnQueryTextListener(this)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_delete_all -> confirmDeleteItems()
+            R.id.menu_delete_all -> {
+                confirmDeleteItems()
+            }
+            R.id.menu_priority_high -> {
+                viewModel.sortByHighPriority.observe(this, Observer {
+                    adapter.submitList(it)
+                })
+            }
+            R.id.menu_priority_low -> {
+                viewModel.sortByLowPriority.observe(this, Observer {
+                    adapter.submitList(it)
+                })
+            }
             //else -> IllegalStateException("Not Found Menu Item Id")
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        if (query != null) {
+            searchQuery(query)
+        }
+
+        return true
+    }
+
+    override fun onQueryTextChange(query: String?): Boolean {
+        if (query != null) {
+            searchQuery(query)
+        }
+
+        return true
     }
 
     override fun onDestroyView() {

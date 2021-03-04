@@ -1,8 +1,5 @@
 # TodoApp
 
-
-###Udemy course
-
 * Develop Todo App with Kotlin
 
 * Safe args
